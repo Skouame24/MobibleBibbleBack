@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const core_1 = require("@nestjs/core");
 const auth_module_1 = require("./auth/auth.module");
 const prisma_module_1 = require("./prisma/prisma.module");
 const users_module_1 = require("./users/users.module");
@@ -20,6 +21,7 @@ const bible_module_1 = require("./bible/bible.module");
 const reactions_module_1 = require("./reactions/reactions.module");
 const highlights_module_1 = require("./highlights/highlights.module");
 const notes_module_1 = require("./notes/notes.module");
+const transform_interceptor_1 = require("./common/interceptors/transform.interceptor");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,6 +42,12 @@ exports.AppModule = AppModule = __decorate([
             reactions_module_1.ReactionsModule,
             highlights_module_1.HighlightsModule,
             notes_module_1.NotesModule
+        ],
+        providers: [
+            {
+                provide: core_1.APP_INTERCEPTOR,
+                useClass: transform_interceptor_1.TransformInterceptor,
+            },
         ],
     })
 ], AppModule);

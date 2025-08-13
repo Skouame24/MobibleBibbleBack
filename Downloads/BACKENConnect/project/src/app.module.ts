@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
@@ -11,6 +12,7 @@ import { BibleModule } from './bible/bible.module';
 import { ReactionsModule } from './reactions/reactions.module';
 import { HighlightsModule } from './highlights/highlights.module';
 import { NotesModule } from './notes/notes.module';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 @Module({
   imports: [
@@ -28,6 +30,12 @@ import { NotesModule } from './notes/notes.module';
     ReactionsModule,
     HighlightsModule,
     NotesModule
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
   ],
 })
 export class AppModule {}
