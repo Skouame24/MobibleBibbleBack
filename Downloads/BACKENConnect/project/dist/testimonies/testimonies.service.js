@@ -1,0 +1,158 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TestimoniesService = void 0;
+const common_1 = require("@nestjs/common");
+const prisma_service_1 = require("../prisma/prisma.service");
+let TestimoniesService = class TestimoniesService {
+    constructor(prisma) {
+        this.prisma = prisma;
+    }
+    async create(userId, createTestimonyDto) {
+        return this.prisma.testimony.create({
+            data: {
+                ...createTestimonyDto,
+                userId,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
+        });
+    }
+    async findAll() {
+        return this.prisma.testimony.findMany({
+            where: {
+                isPublished: true,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        comments: true,
+                        reactions: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+    async findDrafts(userId) {
+        return this.prisma.testimony.findMany({
+            where: {
+                userId,
+                isPublished: false,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        comments: true,
+                        reactions: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+    async findOne(id) {
+        const testimony = await this.prisma.testimony.findUnique({
+            where: { id },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        comments: true,
+                        reactions: true,
+                    },
+                },
+            },
+        });
+        if (!testimony) {
+            throw new common_1.NotFoundException(`Témoignage #${id} non trouvé`);
+        }
+        return testimony;
+    }
+    async update(id, userId, updateTestimonyDto) {
+        const testimony = await this.findOne(id);
+        if (testimony.userId !== userId) {
+            throw new common_1.ForbiddenException('Vous ne pouvez modifier que vos propres témoignages');
+        }
+        return this.prisma.testimony.update({
+            where: { id },
+            data: updateTestimonyDto,
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
+        });
+    }
+    async publish(id, userId) {
+        const testimony = await this.findOne(id);
+        if (testimony.userId !== userId) {
+            throw new common_1.ForbiddenException('Vous ne pouvez publier que vos propres témoignages');
+        }
+        return this.prisma.testimony.update({
+            where: { id },
+            data: { isPublished: true },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
+        });
+    }
+    async remove(id, userId) {
+        const testimony = await this.findOne(id);
+        if (testimony.userId !== userId) {
+            throw new common_1.ForbiddenException('Vous ne pouvez supprimer que vos propres témoignages');
+        }
+        await this.prisma.testimony.delete({
+            where: { id },
+        });
+    }
+};
+exports.TestimoniesService = TestimoniesService;
+exports.TestimoniesService = TestimoniesService = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+], TestimoniesService);
+//# sourceMappingURL=testimonies.service.js.map
